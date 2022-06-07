@@ -2,8 +2,8 @@ use crate::*;
 
 extern crate chrono;
 // use chrono::prelude::*;
-use chrono::{DateTime, Local, NaiveDateTime, Utc};
-use std::time::SystemTime;
+// use chrono::{DateTime, Local, NaiveDateTime, Utc};
+// use std::time::SystemTime;
 
 #[derive(BorshDeserialize, BorshSerialize)]
 pub struct FarmInfo {
@@ -17,7 +17,20 @@ pub struct FarmInfo {
     pub pool_reward_rate: U128,
     pub starting_at: u64,
     pub ending_at: u64,
-    pub stake_infos: UnorderedMap<AccountId, StakeInfo>
+    pub stake_infos: UnorderedMap<AccountId, StakeInfo>,
+}
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct EditingFarmInfo {
+    pub farm_id: u16,
+    pub token_id: AccountId,
+    pub pool_id: u64,
+    pub reward_token_id: AccountId,
+    pub token_reward_rate: U128,
+    pub pool_reward_rate: U128,
+    pub starting_at: u64,
+    pub ending_at: u64,
 }
 
 impl FarmInfo {
@@ -42,11 +55,7 @@ impl FarmInfo {
             pool_reward_rate,
             starting_at,
             ending_at,
-            stake_infos: UnorderedMap::new(
-                StorageKey::StakeInfos {
-                    farm_id
-                }
-            )
+            stake_infos: UnorderedMap::new(StorageKey::StakeInfos { farm_id }),
         }
     }
 }
@@ -63,7 +72,7 @@ impl Contract {
         pool_reward_rate: U128,
         starting_at: u64,
         ending_at: u64,
-    ){
+    ) {
         self.assert_owner();
         assert_one_yocto();
         self.farm_infos.push(&FarmInfo::new(

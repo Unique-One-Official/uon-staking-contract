@@ -15,3 +15,13 @@ pub struct StakeInfo {
     pub claimed_token_at: u64,
     pub claimed_lp_at: u64,
 }
+
+#[derive(BorshDeserialize, BorshSerialize)]
+pub struct SwapStakeInfo {
+    pub owner_id: AccountId,
+    pub token_amount: U128,
+    pub token_locked: Vector<U128>,
+    pub unlocked_at: Vector<u64>,
+    pub created_at: u64,
+    pub claimed_token_at: Vector<u64>,
+}
