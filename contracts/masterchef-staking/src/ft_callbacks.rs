@@ -4,6 +4,7 @@ use crate::*;
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct StakingArgs {
+    pub stake_type: u8,
     pub farm_id: u16,
     pub lock_duration: u64,
 }
@@ -37,6 +38,7 @@ impl MFTTokenReceiver for Contract {
         msg: String,
     ) -> PromiseOrValue<U128> {
         let StakingArgs {
+            stake_type,
             farm_id,
             lock_duration,
         } = near_sdk::serde_json::from_str(&msg).expect("Invalid PurchaseArgs");
@@ -46,26 +48,30 @@ impl MFTTokenReceiver for Contract {
 
         assert!(self.farm_infos.len() > farm_id.into(), "Invalid Farm ID");
 
+        if self.user_list.to_vec().contains(&sender_id) == false {
+            self.user_list.push(&sender_id);
+        }
+
         let mut pool_id: u64 = 0;
         if token_id.starts_with(":") {
             if let Ok(pool_index) = str::parse::<u64>(&token_id[1..token_id.len()]) {
                 pool_id = pool_index;
             } else {
-                env::panic(b"Invalid Pool ID");
+                env::panic_str("Invalid Pool ID");
             }
         } else {
-            env::panic(b"Invalid Pool ID");
+            env::panic_str("Invalid Pool ID");
         }
+        let now = env::block_timestamp() / 1000000;
+
+        self.update_claim_amounts(farm_id, 1 , now);
         let mut farm_info = self.farm_infos.get(farm_id.into()).unwrap();
 
-        if pool_id == farm_info.pool_id {
-            self.update_claim_amounts(farm_id, 1);
+        assert!(farm_info.farm_type == 1 || farm_info.farm_type == 2, "LP Pool does not exist in this Farm");
 
-            farm_info.total_lp_share_amount = U128::from(
-                u128::from(farm_info.total_lp_share_amount)
-                    .checked_add(u128::from(amount))
-                    .unwrap(),
-            );
+
+        if pool_id == farm_info.pool_id {
+
             let info: Option<StakeInfo> = farm_info.stake_infos.get(&sender_id);
 
             let mut stake_info = if let Some(info) = info {
@@ -73,10 +79,11 @@ impl MFTTokenReceiver for Contract {
             } else {
                 let empty_value = StakeInfo {
                     owner_id: sender_id.clone(),
-                    token_amount: U128(0),
-                    lp_share_amount: U128(0),
-                    reward_token_to_claim: U128(0),
-                    reward_lp_to_claim: U128(0),
+                    token_amount: 0,
+                    lp_share_amount: 0,
+                    reward_amount: 0,
+                    reward_token_to_claim: 0,
+                    reward_lp_to_claim: 0,
                     token_locked: Vector::new(StorageKey::LockInfos {
                         farm_id,
                         account_id: sender_id.clone(),
@@ -87,37 +94,55 @@ impl MFTTokenReceiver for Contract {
                         account_id: sender_id.clone(),
                         lock_info_type: 1,
                     }),
-                    unlocked_at: Vector::new(StorageKey::LockInfos {
+                    reward_locked: Vector::new(StorageKey::LockInfos {
                         farm_id,
                         account_id: sender_id.clone(),
                         lock_info_type: 2,
                     }),
-                    staking_duration: Vector::new(StorageKey::LockInfos {
+                    unlocked_at: Vector::new(StorageKey::LockInfos {
                         farm_id,
                         account_id: sender_id.clone(),
                         lock_info_type: 3,
                     }),
-                    created_at: env::block_timestamp() / 1000000,
-                    claimed_token_at: env::block_timestamp() / 1000000,
-                    claimed_lp_at: env::block_timestamp() / 1000000,
+                    staking_duration: Vector::new(StorageKey::LockInfos {
+                        farm_id,
+                        account_id: sender_id.clone(),
+                        lock_info_type: 4,
+                    }),
+                    lp_share_weight: 0,
+                    token_weight: 0,
+                    created_at: now,
+                    claimed_token_at: now,
+                    claimed_lp_at: now,
+                    claimed_reward_at: now,
                 };
                 empty_value
             };
 
             stake_info.token_locked.push(&U128(0));
             stake_info.lp_share_locked.push(&amount);
+            stake_info.reward_locked.push(&U128(0));
             stake_info
                 .unlocked_at
-                .push(&(env::block_timestamp() / 1000000 + lock_duration));
+                .push(&(now + lock_duration));
             stake_info.staking_duration.push(&lock_duration);
-            stake_info.lp_share_amount = U128::from(
-                u128::from(stake_info.lp_share_amount)
+            stake_info.claimed_lp_at = now;
+            stake_info.lp_share_amount = stake_info.lp_share_amount.checked_add(u128::from(amount)).unwrap();
+            farm_info.total_lp_share_amount = farm_info.total_lp_share_amount
                     .checked_add(u128::from(amount))
-                    .unwrap(),
-            );
-            stake_info.claimed_lp_at = env::block_timestamp() / 1000000;
+                    .unwrap();
+            let reward_weight = u128::from(amount).checked_mul(100000000).unwrap().checked_div(farm_info.total_lp_share_amount).unwrap().checked_mul(100000000000000000000).unwrap().checked_add(u128::from(amount).checked_mul(farm_info.pool_weight_rate.into()).unwrap().checked_div(10000).unwrap().checked_div(u128::from(farm_info.max_token_vesting_duration)).unwrap().checked_mul(u128::from(lock_duration)).unwrap()).unwrap();
+            stake_info.lp_share_weight = stake_info.lp_share_weight.checked_add(reward_weight).unwrap();
+            farm_info.total_lp_share_weight = farm_info.total_lp_share_weight.checked_add(u128::from(reward_weight)).unwrap();
 
             farm_info.stake_infos.insert(&sender_id, &stake_info);
+
+            if pool_id == 382 {
+                let mut user_staked = self.user_lp_stake_info.get(&sender_id).unwrap_or(0);
+                user_staked = user_staked + u128::from(amount);
+                self.user_lp_stake_info.insert(&sender_id, &user_staked);
+                self.total_lp_staked = self.total_lp_staked + u128::from(amount);
+            }
         }
         self.farm_infos.replace(farm_id.into(), &farm_info);
         PromiseOrValue::Value(U128(0))
@@ -133,6 +158,7 @@ impl FungibleTokenReceiver for Contract {
         msg: String,
     ) -> PromiseOrValue<U128> {
         let StakingArgs {
+            stake_type,
             farm_id,
             lock_duration,
         } = near_sdk::serde_json::from_str(&msg).expect("Invalid PurchaseArgs");
@@ -140,9 +166,14 @@ impl FungibleTokenReceiver for Contract {
         let ft_token_id = env::predecessor_account_id();
         assert!(amount.0 > 0, "Amount must be greater than 0");
 
-        let swap_tokens = self.swap_farms.keys_as_vector().to_vec();
+        if self.user_list.to_vec().contains(&sender_id) == false {
+            self.user_list.push(&sender_id);
+        }
 
-        if swap_tokens.contains(&ft_token_id) {
+        let swap_tokens = self.swap_farms.keys_as_vector().to_vec();
+        let now = env::block_timestamp() / 1000000;
+
+        if swap_tokens.contains(&ft_token_id) && stake_type == 1 {
             let mut swap_farm_info = self.swap_farms.get(&ft_token_id).unwrap();
             let swap_rate = swap_farm_info.swap_rate;
             let swaped_amount = if swap_farm_info.token_decimal >= 18 {
@@ -189,7 +220,7 @@ impl FungibleTokenReceiver for Contract {
                         account_id: sender_id.clone(),
                         lock_info_type: 1,
                     }),
-                    created_at: env::block_timestamp() / 1000000,
+                    created_at: now,
                     claimed_token_at: Vector::new(StorageKey::SwapStakeLockInfos {
                         token_id: ft_token_id.clone(),
                         account_id: sender_id.clone(),
@@ -208,10 +239,10 @@ impl FungibleTokenReceiver for Contract {
                 .push(&U128::from(swaped_amount));
             swap_stake_info
                 .unlocked_at
-                .push(&(env::block_timestamp() / 1000000 + 365 * 86400 * 3 * 1000));
+                .push(&(now + swap_farm_info.max_lock_time));
             swap_stake_info
                 .claimed_token_at
-                .push(&(env::block_timestamp() / 1000000));
+                .push(&(now));
 
             swap_farm_info
                 .stake_infos
@@ -219,25 +250,25 @@ impl FungibleTokenReceiver for Contract {
             self.swap_farms.insert(&ft_token_id, &swap_farm_info);
         } else {
             assert!(self.farm_infos.len() > farm_id.into(), "Invalid Farm ID");
+            self.update_claim_amounts(farm_id, 0, now);
             let mut farm_info = self.farm_infos.get(farm_id.into()).unwrap();
 
+            assert!(farm_info.farm_type == 0 || farm_info.farm_type == 2, "Token Pool does not exist in this Farm");
+
             if ft_token_id == farm_info.token_id {
-                self.update_claim_amounts(farm_id, 0);
-                farm_info.total_token_amount = U128::from(
-                    u128::from(farm_info.total_token_amount)
-                        .checked_add(u128::from(amount))
-                        .unwrap(),
-                );
                 let info: Option<StakeInfo> = farm_info.stake_infos.get(&sender_id);
                 let mut stake_info = if let Some(info) = info {
                     info
                 } else {
                     let empty_value = StakeInfo {
                         owner_id: sender_id.clone(),
-                        token_amount: U128(0),
-                        lp_share_amount: U128(0),
-                        reward_token_to_claim: U128(0),
-                        reward_lp_to_claim: U128(0),
+                        token_amount: 0,
+                        lp_share_amount: 0,
+                        reward_amount: 0,
+                        token_weight: 0,
+                        lp_share_weight: 0,
+                        reward_token_to_claim: 0,
+                        reward_lp_to_claim: 0,
                         token_locked: Vector::new(StorageKey::LockInfos {
                             farm_id,
                             account_id: sender_id.clone(),
@@ -248,36 +279,50 @@ impl FungibleTokenReceiver for Contract {
                             account_id: sender_id.clone(),
                             lock_info_type: 1,
                         }),
-                        unlocked_at: Vector::new(StorageKey::LockInfos {
+                        reward_locked: Vector::new(StorageKey::LockInfos {
                             farm_id,
                             account_id: sender_id.clone(),
                             lock_info_type: 2,
                         }),
-                        staking_duration: Vector::new(StorageKey::LockInfos {
+                        unlocked_at: Vector::new(StorageKey::LockInfos {
                             farm_id,
                             account_id: sender_id.clone(),
                             lock_info_type: 3,
                         }),
-                        created_at: env::block_timestamp() / 1000000,
-                        claimed_token_at: env::block_timestamp() / 1000000,
-                        claimed_lp_at: env::block_timestamp() / 1000000,
+                        staking_duration: Vector::new(StorageKey::LockInfos {
+                            farm_id,
+                            account_id: sender_id.clone(),
+                            lock_info_type: 4,
+                        }),
+                        created_at: now,
+                        claimed_token_at: now,
+                        claimed_lp_at: now,
+                        claimed_reward_at: now,
                     };
                     empty_value
                 };
                 stake_info.token_locked.push(&amount);
                 stake_info.lp_share_locked.push(&U128(0));
+                stake_info.reward_locked.push(&U128(0));
+                stake_info.staking_duration.push(&lock_duration);
                 stake_info
                     .unlocked_at
-                    .push(&(env::block_timestamp() / 1000000 + lock_duration));
-                stake_info.staking_duration.push(&lock_duration);
-                stake_info.token_amount = U128::from(
-                    u128::from(stake_info.token_amount)
-                        .checked_add(u128::from(amount))
-                        .unwrap(),
-                );
-                stake_info.claimed_token_at = env::block_timestamp() / 1000000;
+                    .push(&(now + lock_duration));
+                stake_info.claimed_token_at = now;
+                stake_info.token_amount = stake_info.token_amount.checked_add(u128::from(amount)).unwrap();
+                farm_info.total_token_amount = farm_info.total_token_amount.checked_add(u128::from(amount)).unwrap();
+                let multiplier: u128 = 10;
+                let reward_weight = u128::from(amount).checked_mul(100000000).unwrap().checked_div(farm_info.total_token_amount).unwrap().checked_mul(100000000000000000000).unwrap().checked_add(u128::from(amount).checked_mul(farm_info.token_weight_rate.into()).unwrap().checked_div(10000).unwrap().checked_div(u128::from(farm_info.max_token_vesting_duration)).unwrap().checked_mul(u128::from(lock_duration)).unwrap().checked_mul(multiplier.pow((24-farm_info.token_decimal).try_into().unwrap())).unwrap()).unwrap();
+                stake_info.token_weight = stake_info.token_weight.checked_add(reward_weight).unwrap();
+                farm_info.total_token_weight = farm_info.total_token_weight.checked_add(u128::from(reward_weight)).unwrap();
                 farm_info.stake_infos.insert(&sender_id, &stake_info);
                 self.farm_infos.replace(farm_id.into(), &farm_info);
+                if ft_token_id == AccountId::new_unchecked("unet.testnet".to_string()) {
+                    let mut user_staked = self.user_unet_stake_info.get(&sender_id).unwrap_or(0);
+                    user_staked = user_staked + u128::from(amount);
+                    self.user_unet_stake_info.insert(&sender_id, &user_staked);
+                    self.total_unet_staked = self.total_unet_staked + u128::from(amount);
+                }
             }
         }
         PromiseOrValue::Value(U128(0))

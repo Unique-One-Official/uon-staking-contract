@@ -8,8 +8,8 @@ or if you want to transfer nft with payment you can use "nft_transfer_payout". t
 "ft_transfer" is used for transfering FT tokens.
 Not for transfer $Near.
 */
-#[ext_contract(ext_contract)]
-trait ExtContract {
+#[ext_contract(ext_transfer)]
+trait ExtTransfer {
     fn ft_transfer(
         &mut self,
         receiver_id: AccountId,
@@ -19,7 +19,7 @@ trait ExtContract {
     fn mft_transfer(
         &mut self,
         token_id: String,
-        receiver_id: ValidAccountId,
+        receiver_id: AccountId,
         amount: U128,
         memo: Option<String>,
     );

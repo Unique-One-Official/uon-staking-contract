@@ -4,13 +4,20 @@ use crate::*;
 #[serde(crate = "near_sdk::serde")]
 pub struct FarmSkeletonInfo {
     pub farm_id: u16,
+    pub farm_type: u8,
     pub token_id: AccountId,
+    pub token_decimal: u8,
     pub pool_id: u64,
-    pub reward_token_id: AccountId,
     pub total_token_amount: U128,
     pub total_lp_share_amount: U128,
+    pub total_reward_amount: U128,
     pub token_reward_rate: U128,
     pub pool_reward_rate: U128,
+    pub reward_reward_rate: U128,
+    pub token_weight_rate: u16,
+    pub pool_weight_rate: u16,
+    pub max_token_vesting_duration: u64,
+    pub max_reward_vesting_duration: u64,
     pub starting_at: u64,
     pub ending_at: u64,
 }
@@ -22,13 +29,16 @@ pub struct StakeSkeletonInfo {
     pub owner_id: AccountId,
     pub token_amount: U128,
     pub lp_share_amount: U128,
+    pub reward_amount: U128,
     pub reward_token_to_claim: U128,
     pub reward_lp_to_claim: U128,
     pub created_at: u64,
     pub claimed_token_at: u64,
     pub claimed_lp_at: u64,
+    pub claimed_reward_at: u64,
     pub token_locked: Vec<U128>,
     pub lp_share_locked: Vec<U128>,
+    pub reward_locked: Vec<U128>,
     pub unlocked_at: Vec<u64>,
     pub staking_duration: Vec<u64>,
 }
@@ -52,6 +62,7 @@ pub struct EditingSwapFarmViewInfo {
     pub token_id: AccountId,
     pub swap_rate: U128,
     pub min_lock_time: u64,
+    pub max_lock_time: u64,
     pub confirmed_admins: Vec<AccountId>,
 }
 
@@ -61,10 +72,46 @@ pub struct SwapFarmViewInfo {
     pub token_id: AccountId,
     pub swap_rate: U128,
     pub min_lock_time: u64,
+    pub max_lock_time: u64,
 }
 
 #[near_bindgen]
 impl Contract {
+    pub fn get_supply_user(&self) -> U64 {
+        U64(self.user_list.len())
+    }
+
+    pub fn get_staker_ids(&self, from_index: U64, limit: u64) -> Vec<AccountId> {
+        let mut tmp = vec![];
+        let start = u64::from(from_index);
+        let end = min(start + limit, self.user_list.len());
+        for i in start..end {
+            let id = self.user_list.get(i.try_into().unwrap())
+            .unwrap();
+            
+            tmp.push(
+                id
+            );
+        }
+        tmp
+    }
+
+    pub fn get_total_unet_staked(&self) -> U128 {
+        U128(self.total_unet_staked)
+    }
+
+    pub fn get_total_lp_staked(&self) -> U128 {
+        U128(self.total_lp_staked)
+    }
+
+    pub fn get_user_unet_staked(&self, account_id: AccountId) -> U128 {
+        U128(self.user_unet_stake_info.get(&account_id).unwrap_or(0))
+    }
+
+    pub fn get_user_lp_staked(&self, account_id: AccountId) -> U128 {
+        U128(self.user_lp_stake_info.get(&account_id).unwrap_or(0))
+    }
+
     /// views
     pub fn get_supply_staking_informations(&self, farm_id: u16) -> U64 {
         assert!(self.farm_infos.len() > farm_id.into(), "Invalid Farm ID");
@@ -77,7 +124,9 @@ impl Contract {
     // pub fn get_staking_informations_by_owner_id(xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
     pub fn get_token_claim_amount(&self, farm_id: u16, account_id: AccountId) -> U128 {
-        self.claim_amount(farm_id, account_id, 0)
+        let now = env::block_timestamp() / 1000000;
+
+        U128(self.claim_amount(farm_id, account_id, 0, now))
     }
 
     pub fn get_token_locked_amount(&self, farm_id: u16, account_id: AccountId) -> U128 {
@@ -85,11 +134,23 @@ impl Contract {
     }
 
     pub fn get_lp_claim_amount(&self, farm_id: u16, account_id: AccountId) -> U128 {
-        self.claim_amount(farm_id, account_id, 1)
+        let now = env::block_timestamp() / 1000000;
+
+        U128(self.claim_amount(farm_id, account_id, 1, now))
     }
 
     pub fn get_lp_locked_amount(&self, farm_id: u16, account_id: AccountId) -> U128 {
         U128(self.lp_locked_amount(farm_id, account_id))
+    }
+
+    pub fn get_reward_claim_amount(&self, farm_id: u16, account_id: AccountId) -> U128 {
+        let now = env::block_timestamp() / 1000000;
+
+        U128(self.claim_amount(farm_id, account_id, 2, now))
+    }
+
+    pub fn get_reward_locked_amount(&self, farm_id: u16, account_id: AccountId) -> U128 {
+        U128(self.reward_locked_amount(farm_id, account_id))
     }
 
     pub fn get_farm_length(&self) -> U64 {
@@ -100,13 +161,20 @@ impl Contract {
         let farm_info = self.farm_infos.get(farm_id.into()).unwrap();
         FarmSkeletonInfo {
             farm_id: farm_info.farm_id,
+            farm_type: farm_info.farm_type,
             token_id: farm_info.token_id,
+            token_decimal: farm_info.token_decimal,
             pool_id: farm_info.pool_id,
-            reward_token_id: farm_info.reward_token_id,
-            total_token_amount: farm_info.total_token_amount,
-            total_lp_share_amount: farm_info.total_lp_share_amount,
-            token_reward_rate: farm_info.token_reward_rate,
-            pool_reward_rate: farm_info.pool_reward_rate,
+            total_token_amount: U128(farm_info.total_token_amount),
+            total_lp_share_amount: U128(farm_info.total_lp_share_amount),
+            total_reward_amount: U128(farm_info.total_reward_amount),
+            token_reward_rate: U128(farm_info.token_reward_rate),
+            pool_reward_rate: U128(farm_info.pool_reward_rate),
+            reward_reward_rate: U128(farm_info.reward_reward_rate),
+            token_weight_rate: farm_info.token_weight_rate,
+            pool_weight_rate: farm_info.pool_weight_rate,
+            max_token_vesting_duration: farm_info.max_token_vesting_duration,
+            max_reward_vesting_duration: farm_info.max_reward_vesting_duration,
             starting_at: farm_info.starting_at,
             ending_at: farm_info.ending_at,
         }
@@ -127,15 +195,18 @@ impl Contract {
             let stake_info = StakeSkeletonInfo {
                 farm_id: farm_id,
                 owner_id: info.owner_id,
-                token_amount: info.token_amount,
-                lp_share_amount: info.lp_share_amount,
-                reward_token_to_claim: info.reward_token_to_claim,
-                reward_lp_to_claim: info.reward_lp_to_claim,
+                token_amount: U128(info.token_amount),
+                lp_share_amount: U128(info.lp_share_amount),
+                reward_amount: U128(info.reward_amount),
+                reward_token_to_claim: U128(info.reward_token_to_claim),
+                reward_lp_to_claim: U128(info.reward_lp_to_claim),
                 created_at: info.created_at,
                 claimed_token_at: info.claimed_token_at,
                 claimed_lp_at: info.claimed_lp_at,
+                claimed_reward_at: info.claimed_reward_at,
                 token_locked: info.token_locked.to_vec(),
                 lp_share_locked: info.lp_share_locked.to_vec(),
+                reward_locked: info.reward_locked.to_vec(),
                 unlocked_at: info.unlocked_at.to_vec(),
                 staking_duration: info.staking_duration.to_vec(),
             };
@@ -190,6 +261,7 @@ impl Contract {
                 token_id: swap_token.clone(),
                 swap_rate: self.swap_farms.get(&swap_token).unwrap().swap_rate,
                 min_lock_time: self.swap_farms.get(&swap_token).unwrap().min_lock_time,
+                max_lock_time: self.swap_farms.get(&swap_token).unwrap().max_lock_time,
             });
         }
         swap_info
@@ -205,6 +277,7 @@ impl Contract {
                 token_id: swap_token,
                 swap_rate: editing_swap_farm_info.swap_rate,
                 min_lock_time: editing_swap_farm_info.min_lock_time,
+                max_lock_time: editing_swap_farm_info.max_lock_time,
                 confirmed_admins: editing_swap_farm_info.confirmed_admins.as_vector().to_vec(),
             });
         }
