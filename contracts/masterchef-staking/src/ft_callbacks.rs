@@ -48,10 +48,6 @@ impl MFTTokenReceiver for Contract {
 
         assert!(self.farm_infos.len() > farm_id.into(), "Invalid Farm ID");
 
-        if self.user_list.to_vec().contains(&sender_id) == false {
-            self.user_list.push(&sender_id);
-        }
-
         let mut pool_id: u64 = 0;
         if token_id.starts_with(":") {
             if let Ok(pool_index) = str::parse::<u64>(&token_id[1..token_id.len()]) {
@@ -137,12 +133,8 @@ impl MFTTokenReceiver for Contract {
 
             farm_info.stake_infos.insert(&sender_id, &stake_info);
 
-            if pool_id == 382 {
-                let mut user_staked = self.user_lp_stake_info.get(&sender_id).unwrap_or(0);
-                user_staked = user_staked + u128::from(amount);
-                self.user_lp_stake_info.insert(&sender_id, &user_staked);
-                self.total_lp_staked = self.total_lp_staked + u128::from(amount);
-            }
+            let lp_staked = self.lp_stake_info.get(pool_id).unwrap_or(0) + u128::from(amount);
+            self.lp_stake_info.insert(pool_id, &lp_staked);
         }
         self.farm_infos.replace(farm_id.into(), &farm_info);
         PromiseOrValue::Value(U128(0))
@@ -165,10 +157,6 @@ impl FungibleTokenReceiver for Contract {
 
         let ft_token_id = env::predecessor_account_id();
         assert!(amount.0 > 0, "Amount must be greater than 0");
-
-        if self.user_list.to_vec().contains(&sender_id) == false {
-            self.user_list.push(&sender_id);
-        }
 
         let swap_tokens = self.swap_farms.keys_as_vector().to_vec();
         let now = env::block_timestamp() / 1000000;
@@ -317,12 +305,9 @@ impl FungibleTokenReceiver for Contract {
                 farm_info.total_token_weight = farm_info.total_token_weight.checked_add(u128::from(reward_weight)).unwrap();
                 farm_info.stake_infos.insert(&sender_id, &stake_info);
                 self.farm_infos.replace(farm_id.into(), &farm_info);
-                if ft_token_id == AccountId::new_unchecked("unet.testnet".to_string()) {
-                    let mut user_staked = self.user_unet_stake_info.get(&sender_id).unwrap_or(0);
-                    user_staked = user_staked + u128::from(amount);
-                    self.user_unet_stake_info.insert(&sender_id, &user_staked);
-                    self.total_unet_staked = self.total_unet_staked + u128::from(amount);
-                }
+
+                let token_staked = self.token_stake_info.get(&ft_token_id).unwrap_or(0) + u128::from(amount);
+                self.token_stake_info.insert(&ft_token_id, &token_staked);
             }
         }
         PromiseOrValue::Value(U128(0))

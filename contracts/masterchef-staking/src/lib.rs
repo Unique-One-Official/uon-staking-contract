@@ -61,11 +61,8 @@ pub struct Contract {
     pub confirmed_admins_for_new_farm: UnorderedSet<AccountId>,
     pub swap_farms: UnorderedMap<AccountId, SwapFarmInfo>,
     pub editing_swap_farm_infos: UnorderedMap<AccountId, EditingSwapFarmInfoData>,
-    pub total_unet_staked: u128,
-    pub total_lp_staked: u128,
-    pub user_list: Vector<AccountId>,
-    pub user_unet_stake_info: LookupMap<AccountId, u128>,
-    pub user_lp_stake_info: LookupMap<AccountId, u128>,
+    pub token_stake_info: LookupMap<AccountId, u128>,
+    pub lp_stake_info: LookupMap<AccountId, u128>,
 }
 
 /// Helper structure to for keys of the persistent collections.
@@ -98,9 +95,8 @@ pub enum StorageKey {
         token_id: AccountId,
         type_id: u64,
     },
-    UserList,
-    UserUnetStakeInfo,
-    UserLPStakeInfo,
+    TokenStakeInfo,
+    LPStakeInfo,
 }
 
 #[near_bindgen]
@@ -131,11 +127,8 @@ impl Contract {
             confirmed_admins_for_new_farm: UnorderedSet::new(StorageKey::ConfirmedAdminsForNewFarm),
             swap_farms: UnorderedMap::new(StorageKey::SwapFarms),
             editing_swap_farm_infos: UnorderedMap::new(StorageKey::EditingSwapFarmInfo),
-            total_unet_staked: 0,
-            total_lp_staked: 0,
-            user_list: Vector::new(StorageKey::UserList),
-            user_unet_stake_info: LookupMap::new(StorageKey::UserUnetStakeInfo),
-            user_lp_stake_info: LookupMap::new(StorageKey::UserLPStakeInfo),
+            token_stake_info: LookupMap::new(StorageKey::TokenStakeInfo),
+            lp_stake_info: LookupMap::new(StorageKey::LPStakeInfo),
         };
         this
     }

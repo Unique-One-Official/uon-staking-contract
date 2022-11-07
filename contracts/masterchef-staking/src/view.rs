@@ -45,19 +45,6 @@ pub struct StakeSkeletonInfo {
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
-pub struct SwapStakeSkeletonInfo {
-    pub owner_id: AccountId,
-    pub token_id: AccountId,
-    pub token_amount: U128,
-    pub token_locked: Vec<U128>,
-    pub unlocked_at: Vec<u64>,
-    pub created_at: u64,
-    pub claimed_token_at: Vec<u64>,
-    pub unstake_amount: Vec<U128>,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "near_sdk::serde")]
 pub struct EditingSwapFarmViewInfo {
     pub token_id: AccountId,
     pub swap_rate: U128,
@@ -77,39 +64,13 @@ pub struct SwapFarmViewInfo {
 
 #[near_bindgen]
 impl Contract {
-    pub fn get_supply_user(&self) -> U64 {
-        U64(self.user_list.len())
+
+    pub fn get_token_staked(&self, token_id: AccountId) -> U128 {
+        U128(self.token_stake_info.get(&token_id).unwrap_or(0))
     }
 
-    pub fn get_staker_ids(&self, from_index: U64, limit: u64) -> Vec<AccountId> {
-        let mut tmp = vec![];
-        let start = u64::from(from_index);
-        let end = min(start + limit, self.user_list.len());
-        for i in start..end {
-            let id = self.user_list.get(i.try_into().unwrap())
-            .unwrap();
-            
-            tmp.push(
-                id
-            );
-        }
-        tmp
-    }
-
-    pub fn get_total_unet_staked(&self) -> U128 {
-        U128(self.total_unet_staked)
-    }
-
-    pub fn get_total_lp_staked(&self) -> U128 {
-        U128(self.total_lp_staked)
-    }
-
-    pub fn get_user_unet_staked(&self, account_id: AccountId) -> U128 {
-        U128(self.user_unet_stake_info.get(&account_id).unwrap_or(0))
-    }
-
-    pub fn get_user_lp_staked(&self, account_id: AccountId) -> U128 {
-        U128(self.user_lp_stake_info.get(&account_id).unwrap_or(0))
+    pub fn get_lp_staked(&self, pool_id: AccountId) -> U128 {
+        U128(self.lp_stake_info.get(&pool_id).unwrap_or(0))
     }
 
     /// views
@@ -216,34 +177,6 @@ impl Contract {
             vec![]
         }
         // tmp
-    }
-
-    pub fn get_swap_stake_info_by_userid(
-        &self,
-        account_id: AccountId,
-    ) -> Vec<SwapStakeSkeletonInfo> {
-        let mut stake_info_vec = vec![];
-        for i in 0..self.swap_farms.len() {
-            let swap_token = self.swap_farms.keys_as_vector().get(i).unwrap();
-            let swap_farm_data = self.swap_farms.get(&swap_token).unwrap();
-            let info = swap_farm_data.stake_infos.get(&account_id);
-            if let Some(info) = info {
-                let swap_unstake_amount =
-                    self.get_swap_unstake_amount(swap_token.clone(), info.owner_id.clone());
-                stake_info_vec.push(SwapStakeSkeletonInfo {
-                    owner_id: info.owner_id.clone(),
-                    token_id: swap_token.clone(),
-                    token_amount: info.token_amount,
-                    token_locked: info.token_locked.to_vec(),
-                    unlocked_at: info.unlocked_at.to_vec(),
-                    claimed_token_at: info.claimed_token_at.to_vec(),
-                    created_at: info.created_at,
-                    unstake_amount: swap_unstake_amount,
-                });
-            } else {
-            }
-        }
-        stake_info_vec
     }
 
     pub fn get_swap_tokens(&self) -> Vec<AccountId> {
