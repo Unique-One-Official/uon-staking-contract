@@ -1,4 +1,4 @@
-near create-account uon_staking_test_03.supernova11.testnet --masterAccount supernova11.testnet --initialBalance 6
+near create-account v1_1.stakenet.testnet --masterAccount stakenet.testnet --initialBalance 6
 
 
-near deploy --accountId uon_staking_test_03.supernova11.testnet --wasmFile out/masterchef.wasm --initFunction new --initArgs '{"owner_id": "supernova11.testnet"}'
+near deploy --accountId v1_1.stakenet.testnet --wasmFile out/masterchef.wasm --initFunction new --initArgs '{"owner_id": "stakenet.testnet"}'

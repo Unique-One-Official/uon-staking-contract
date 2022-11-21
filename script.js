@@ -1,14 +1,3 @@
-// Welcome to the Mass Key Deletion recipe.
-
-// This tool allows you to
-// 1. Delete all your functionCall Access Keys
-// 2. Delete all but one specified Full Access Key
-// 3. Delete all Full Access Keys and Lock an Account
-
-/// STEP 1 Install near-api-js
-// npm init (in directory where you stored this script)
-// npm i near-api-js
-
 const nearAPI = require("near-api-js"); // imports near api js
 const { providers } = require("near-api-js");
 const provider = new providers.JsonRpcProvider("https://rpc.testnet.near.org");
@@ -21,9 +10,6 @@ const credentialsPath = require("path").join(homedir, CREDENTIALS_DIR);
 const keyStore = new keyStores.UnencryptedFileSystemKeyStore(credentialsPath);
 let config;
 
-// STEP 2 Choose your configuration.
-// set this variable to either "testnet" or "mainnet"
-// if you haven't used this before use testnet to experiment so you don't lose real tokens by deleting all your access keys
 const configSetting = "testnet";
 
 const GAS_FOR_NFT_APPROVE = "20000000000000";
@@ -61,7 +47,7 @@ switch (configSetting) {
     console.log(`please choose a configuration `);
 }
 
-const STAKING_CONTRACT_ID = "uon_staking_test_09.xuguangxia.testnet";
+const STAKING_CONTRACT_ID = "v1_1.stakenet.testnet";
 const TOKEN_CONTRACT_ID = process.env.REACT_APP_TOKEN_CONTRACT_ID;
 const REF_CONTRACT_ID = "ref-finance-101.testnet";
 const WRAP_CONTRACT_ID = "wrap.testnet";
@@ -72,104 +58,104 @@ const Test = async () => {
 
   // STEP 4 enter your mainnet or testnet account name here!
   const contract_account = await near.account(
-    "uon_staking_test_09.xuguangxia.testnet"
+    STAKING_CONTRACT_ID
   );
-  const xu_account = await near.account("xuguangxia.testnet");
+  const stakenet_account = await near.account("stakenet.testnet");
 
   let result;
 
-  // result = await xu_account.functionCall({
-  //   contractId: STAKING_CONTRACT_ID,
-  //   methodName: "save_swap_farm",
-  //   args: {
-  //     token_id: "token_test01.supernova11.testnet",
-  //     swap_rate: "10000000",
-  //     decimal: 24,
-  //     min_lock_time: 86400000,
-  //     max_lock_time: 2 * 86400000,
-  //   },
-  //   gas: MAX_GAS,
-  //   attachedDeposit: "1",
-  // });
-  // console.log("Add Swap Farm");
-
-  // result = await xu_account.functionCall({
-  //   contractId: STAKING_CONTRACT_ID,
-  //   methodName: "save_swap_farm",
-  //   args: {
-  //     token_id: "token_test02.supernova11.testnet",
-  //     swap_rate: "30000000",
-  //     decimal: 20,
-  //     min_lock_time: 86400000,
-  //     max_lock_time: 2 * 86400000,
-  //   },
-  //   gas: MAX_GAS,
-  //   attachedDeposit: "1",
-  // });
-  // console.log("Add Swap Farm");
-
-
-  // result = await xu_account.functionCall({
-  //   contractId: STAKING_CONTRACT_ID,
-  //   methodName: "add_admin",
-  //   args: {
-  //     account_id: "pocktest.testnet",
-  //   },
-  //   gas: MAX_GAS,
-  //   attachedDeposit: "0",
-  // });
-  // console.log("Add Admin");
-
-  result = await xu_account.functionCall({
+  result = await stakenet_account.functionCall({
     contractId: STAKING_CONTRACT_ID,
-    methodName: "remove_admin",
+    methodName: "save_swap_farm",
     args: {
-      account_id: "dekatjauh.testnet",
+      token_id: "token_test01.supernova11.testnet",
+      swap_rate: "10000000",
+      decimal: 24,
+      min_lock_time: 86400000,
+      max_lock_time: 2 * 86400000,
+    },
+    gas: MAX_GAS,
+    attachedDeposit: "1",
+  });
+  console.log("Add Swap Farm");
+
+  result = await stakenet_account.functionCall({
+    contractId: STAKING_CONTRACT_ID,
+    methodName: "save_swap_farm",
+    args: {
+      token_id: "token_test02.supernova11.testnet",
+      swap_rate: "30000000",
+      decimal: 20,
+      min_lock_time: 86400000,
+      max_lock_time: 2 * 86400000,
+    },
+    gas: MAX_GAS,
+    attachedDeposit: "1",
+  });
+  console.log("Add Swap Farm");
+
+
+  result = await stakenet_account.functionCall({
+    contractId: STAKING_CONTRACT_ID,
+    methodName: "add_admin",
+    args: {
+      account_id: "pocktest.testnet",
     },
     gas: MAX_GAS,
     attachedDeposit: "0",
   });
-  console.log("Remove Admin");
+  console.log("Add Admin");
 
-  // result = await contract_account.functionCall({
-  //   contractId: REF_CONTRACT_ID,
-  //   methodName: "storage_deposit",
+  // result = await stakenet_account.functionCall({
+  //   contractId: STAKING_CONTRACT_ID,
+  //   methodName: "remove_admin",
   //   args: {
-  //     account_id: STAKING_CONTRACT_ID,
-  //     registration_only: false,
+  //     account_id: "dekatjauh.testnet",
   //   },
   //   gas: MAX_GAS,
-  //   attachedDeposit: "1020000000000000000000",
+  //   attachedDeposit: "0",
   // });
-  // console.log("register token");
+  // console.log("Remove Admin");
 
-  // result = await contract_account.functionCall({
-  //   contractId: REF_CONTRACT_ID,
-  //   methodName: "mft_register",
-  //   args: {
-  //     account_id: STAKING_CONTRACT_ID,
-  //     token_id: ":382",
-  //   },
-  //   gas: MAX_GAS,
-  //   attachedDeposit: "1040000000000000000000",
-  // });
-  // console.log("register contract");
+  result = await contract_account.functionCall({
+    contractId: REF_CONTRACT_ID,
+    methodName: "storage_deposit",
+    args: {
+      account_id: STAKING_CONTRACT_ID,
+      registration_only: false,
+    },
+    gas: MAX_GAS,
+    attachedDeposit: "1020000000000000000000",
+  });
+  console.log("register token");
 
-  // result = await contract_account.functionCall({
-  //   contractId: REF_CONTRACT_ID,
-  //   methodName: "mft_register",
-  //   args: {
-  //     account_id: STAKING_CONTRACT_ID,
-  //     token_id: ":642",
-  //   },
-  //   gas: MAX_GAS,
-  //   attachedDeposit: "1040000000000000000000",
-  // });
-  // console.log("register contract");
+  result = await contract_account.functionCall({
+    contractId: REF_CONTRACT_ID,
+    methodName: "mft_register",
+    args: {
+      account_id: STAKING_CONTRACT_ID,
+      token_id: ":382",
+    },
+    gas: MAX_GAS,
+    attachedDeposit: "1040000000000000000000",
+  });
+  console.log("register contract");
+
+  result = await contract_account.functionCall({
+    contractId: REF_CONTRACT_ID,
+    methodName: "mft_register",
+    args: {
+      account_id: STAKING_CONTRACT_ID,
+      token_id: ":642",
+    },
+    gas: MAX_GAS,
+    attachedDeposit: "1040000000000000000000",
+  });
+  console.log("register contract");
 
   // const admin_list = ["halyconstudio.testnet", "decentricity.testnet", "francishor.testnet", "cj.testnet", "pocktest.testnet", "nearfar.testnet", "marvin786.testnet"];
   // for (let i = 0; i < admin_list.length; i++) {
-  //   result = await xu_account.functionCall({
+  //   result = await stakenet_account.functionCall({
   //     contractId: STAKING_CONTRACT_ID,
   //     methodName: "remove_admin",
   //     args: {
@@ -181,7 +167,7 @@ const Test = async () => {
   //   console.log("Add Admin");
   // }
 
-  // result = await xu_account.functionCall({
+  // result = await stakenet_account.functionCall({
   //   contractId: REF_CONTRACT_ID,
   //   methodName: "add_simple_pool",
   //   args: {
@@ -202,7 +188,7 @@ const Test = async () => {
   //   account_id: REF_CONTRACT_ID,
   //   method_name: "get_pool_shares",
   //   args_base64: btoa(
-  //     `{"pool_id": 382, "account_id": "uon_staking_test_09.xuguangxia.testnet"}`
+  //     `{"pool_id": 382, "account_id": STAKING_CONTRACT_ID}`
   //   ),
   //   finality: "optimistic",
   // });
@@ -215,7 +201,7 @@ const Test = async () => {
   //   account_id: TOKEN_CONTRACT_ID,
   //   method_name: "ft_balance_of",
   //   args_base64: btoa(
-  //     `{"account_id": "uon_staking_test_09.xuguangxia.testnet"}`
+  //     `{"account_id": STAKING_CONTRACT_ID}`
   //   ),
   //   finality: "optimistic",
   // });
@@ -241,7 +227,7 @@ const Test = async () => {
   //   account_id: REF_CONTRACT_ID,
   //   method_name: "get_pool_shares",
   //   args_base64: btoa(
-  //     `{"pool_id": 382, "account_id": "uon_staking_test_09.xuguangxia.testnet"}`
+  //     `{"pool_id": 382, "account_id": STAKING_CONTRACT_ID}`
   //   ),
   //   finality: "optimistic",
   // });
