@@ -56,26 +56,6 @@
     "last 2 Chrome versions"
   ],
   "scripts": {
-    "hoist-credentials": "mkdir ./neardev/testnet && mkdir ./neardev/mainnet && node ./utils/hoist-credentials.js",
-    "test:deploy": "yarn dev:deploy && yarn hoist-credentials && yarn test",
-    "dev:deploy": "yarn build:contracts && rm -rf neardev && (near dev-deploy || exit 0) && yarn patch:config",
-    "build:contracts": "cd contracts/masterchef-staking && ./build.sh && cd ../..",
-    "patch:config": "node ./utils/patch-config.js",
-    "test": "cross-env REACT_APP_ENV=dev jest app.test.js --useStderr",
-    "prestart": "rm -rf ./parcel-cache",
-    "start": "react-scripts start",
-    "start:helper": "cross-env REACT_APP_ENV=dev REACT_APP_API_HELPER=true parcel src_template/index.html --open",
-    "start:deploy": "yarn patch:deploy-config && cross-env REACT_APP_ENV=dev REACT_APP_API_HELPER=true parcel src_template/index.html --open",
-    "fix": "eslint src_template/ test/ --fix",
-    "test:unit": "(cd contracts && cargo test -- --nocapture --color always)",
-    "prebuild": "rm -rf ./dist",
-    "patch:deploy-config": "node ./utils/patch-deploy-config.js",
-    "build": "parcel build src_template/index.html --public-url https://near-apps.github.io/nft-market/",
-    "deploy": "yarn patch:deploy-config && cross-env REACT_APP_ENV=dev REACT_APP_API_HELPER=true yarn build && gh-pages -d dist",
-    "start_frontend": "cross-env PORT=3000 react-scripts start",
-    "build_frontend": "react-scripts build",
-    "test_frontend": "react-scripts test",
-    "eject_frontend": "react-scripts eject",
-    "server": "node ./api/server.js"
+    "build": "cd contracts/masterchef-staking && ./build.sh && cd ../.."
   }
 }

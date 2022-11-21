@@ -133,8 +133,8 @@ impl MFTTokenReceiver for Contract {
 
             farm_info.stake_infos.insert(&sender_id, &stake_info);
 
-            let lp_staked = self.lp_stake_info.get(pool_id).unwrap_or(0) + u128::from(amount);
-            self.lp_stake_info.insert(pool_id, &lp_staked);
+            let lp_staked = self.lp_stake_info.get(&pool_id).unwrap_or(0) + u128::from(amount);
+            self.lp_stake_info.insert(&pool_id, &lp_staked);
         }
         self.farm_infos.replace(farm_id.into(), &farm_info);
         PromiseOrValue::Value(U128(0))

@@ -62,7 +62,7 @@ pub struct Contract {
     pub swap_farms: UnorderedMap<AccountId, SwapFarmInfo>,
     pub editing_swap_farm_infos: UnorderedMap<AccountId, EditingSwapFarmInfoData>,
     pub token_stake_info: LookupMap<AccountId, u128>,
-    pub lp_stake_info: LookupMap<AccountId, u128>,
+    pub lp_stake_info: LookupMap<u64, u128>,
 }
 
 /// Helper structure to for keys of the persistent collections.

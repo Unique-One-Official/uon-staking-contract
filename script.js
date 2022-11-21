@@ -61,9 +61,9 @@ switch (configSetting) {
     console.log(`please choose a configuration `);
 }
 
-const STAKING_CONTRACT_ID = process.env.REACT_APP_STAKING_CONTRACT_ID;
+const STAKING_CONTRACT_ID = "uon_staking_test_09.xuguangxia.testnet";
 const TOKEN_CONTRACT_ID = process.env.REACT_APP_TOKEN_CONTRACT_ID;
-const REF_CONTRACT_ID = process.env.REACT_APP_REF_CONTRACT_ID;
+const REF_CONTRACT_ID = "ref-finance-101.testnet";
 const WRAP_CONTRACT_ID = "wrap.testnet";
 
 const Test = async () => {
@@ -71,22 +71,130 @@ const Test = async () => {
   const near = await connect(config);
 
   // STEP 4 enter your mainnet or testnet account name here!
-  const account = await near.account("uon_staking_test_01.supernova11.testnet");
+  const contract_account = await near.account(
+    "uon_staking_test_09.xuguangxia.testnet"
+  );
+  const xu_account = await near.account("xuguangxia.testnet");
 
   let result;
 
-  // get unet balance of wallet
-  // result = await provider.query({
-  //   request_type: "call_function",
-  //   account_id: TOKEN_CONTRACT_ID,
-  //   method_name: "ft_balance_of",
-  //   args_base64: btoa(
-  //     `{"account_id": "uon_staking_test_01.supernova11.testnet"}`
-  //   ),
-  //   finality: "optimistic",
+  // result = await xu_account.functionCall({
+  //   contractId: STAKING_CONTRACT_ID,
+  //   methodName: "save_swap_farm",
+  //   args: {
+  //     token_id: "token_test01.supernova11.testnet",
+  //     swap_rate: "10000000",
+  //     decimal: 24,
+  //     min_lock_time: 86400000,
+  //     max_lock_time: 2 * 86400000,
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1",
   // });
-  // tmp = JSON.parse(Buffer.from(result.result).toString());
-  // console.log(tmp, ">>>> get unet balance of contract")
+  // console.log("Add Swap Farm");
+
+  // result = await xu_account.functionCall({
+  //   contractId: STAKING_CONTRACT_ID,
+  //   methodName: "save_swap_farm",
+  //   args: {
+  //     token_id: "token_test02.supernova11.testnet",
+  //     swap_rate: "30000000",
+  //     decimal: 20,
+  //     min_lock_time: 86400000,
+  //     max_lock_time: 2 * 86400000,
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1",
+  // });
+  // console.log("Add Swap Farm");
+
+
+  // result = await xu_account.functionCall({
+  //   contractId: STAKING_CONTRACT_ID,
+  //   methodName: "add_admin",
+  //   args: {
+  //     account_id: "pocktest.testnet",
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "0",
+  // });
+  // console.log("Add Admin");
+
+  result = await xu_account.functionCall({
+    contractId: STAKING_CONTRACT_ID,
+    methodName: "remove_admin",
+    args: {
+      account_id: "dekatjauh.testnet",
+    },
+    gas: MAX_GAS,
+    attachedDeposit: "0",
+  });
+  console.log("Remove Admin");
+
+  // result = await contract_account.functionCall({
+  //   contractId: REF_CONTRACT_ID,
+  //   methodName: "storage_deposit",
+  //   args: {
+  //     account_id: STAKING_CONTRACT_ID,
+  //     registration_only: false,
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1020000000000000000000",
+  // });
+  // console.log("register token");
+
+  // result = await contract_account.functionCall({
+  //   contractId: REF_CONTRACT_ID,
+  //   methodName: "mft_register",
+  //   args: {
+  //     account_id: STAKING_CONTRACT_ID,
+  //     token_id: ":382",
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1040000000000000000000",
+  // });
+  // console.log("register contract");
+
+  // result = await contract_account.functionCall({
+  //   contractId: REF_CONTRACT_ID,
+  //   methodName: "mft_register",
+  //   args: {
+  //     account_id: STAKING_CONTRACT_ID,
+  //     token_id: ":642",
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1040000000000000000000",
+  // });
+  // console.log("register contract");
+
+  // const admin_list = ["halyconstudio.testnet", "decentricity.testnet", "francishor.testnet", "cj.testnet", "pocktest.testnet", "nearfar.testnet", "marvin786.testnet"];
+  // for (let i = 0; i < admin_list.length; i++) {
+  //   result = await xu_account.functionCall({
+  //     contractId: STAKING_CONTRACT_ID,
+  //     methodName: "remove_admin",
+  //     args: {
+  //       account_id: admin_list[i]
+  //     },
+  //     gas: MAX_GAS,
+  //     attachedDeposit: "0",
+  //   });
+  //   console.log("Add Admin");
+  // }
+
+  // result = await xu_account.functionCall({
+  //   contractId: REF_CONTRACT_ID,
+  //   methodName: "add_simple_pool",
+  //   args: {
+  //     tokens: [
+  //       "token_test02.supernova11.testnet",
+  //       "usdn.testnet"
+  //     ],
+  //     fee: 30
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "100000000000000000000000",
+  // });
+  // console.log("create pool contract");
 
   // get lp balance of wallet
   // result = await provider.query({
@@ -94,53 +202,30 @@ const Test = async () => {
   //   account_id: REF_CONTRACT_ID,
   //   method_name: "get_pool_shares",
   //   args_base64: btoa(
-  //     `{"pool_id": 382, "account_id": "uon_staking_test_01.supernova11.testnet"}`
+  //     `{"pool_id": 382, "account_id": "uon_staking_test_09.xuguangxia.testnet"}`
   //   ),
   //   finality: "optimistic",
   // });
   // var tmp = JSON.parse(Buffer.from(result.result).toString());
   // console.log(tmp, ">>>> get balance of lp")
 
-  //
-  // result = await account.getAccessKeys();
-  // let tokenKeyExist = false;
-  // for(let i=0; i<result.length; i++){
-  //   if(result[i].access_key.permission != 'FullAccess' && result[i].access_key.permission.FunctionCall.receiver_id == STAKING_CONTRACT_ID){
-  //     tokenKeyExist = true;
-  //     break;
-  //   }
-  // }
-  // if(tokenKeyExist == false){
-  //   console.log("Adding AccessKey to Token");
-  //   const keyPair = KeyPair.fromRandom("ed25519");
-  //   const publicKey = keyPair.publicKey.toString();
-  //   await keyStore.setKey(config.networkId, publicKey, keyPair);
-  //   await account.addKey(publicKey, STAKING_CONTRACT_ID, [], '250000000000000000000000');
-  // }
-
-  // result = await account.getAccessKeys();
-  // let tokenKeyExist = false;
-  // for (let i = 0; i < result.length; i++) {
-  //   if (result[i].access_key.permission != 'FullAccess' && result[i].access_key.permission.FunctionCall.receiver_id == WRAP_CONTRACT_ID) {
-  //     tokenKeyExist = true;
-  //     break;
-  //   }
-  // }
-  // if (tokenKeyExist == false) {
-  //   console.log("Adding AccessKey to Token");
-  //   const keyPair = KeyPair.fromRandom("ed25519");
-  //   const publicKey = keyPair.publicKey.toString();
-  //   await keyStore.setKey(config.networkId, publicKey, keyPair);
-  //   await account.addKey(publicKey, WRAP_CONTRACT_ID, [], '250000000000000000000000');
-  // }
-
-
   // transfer unet from SC to supernova -----------------
+  // let rawResult = await provider.query({
+  //   request_type: "call_function",
+  //   account_id: TOKEN_CONTRACT_ID,
+  //   method_name: "ft_balance_of",
+  //   args_base64: btoa(
+  //     `{"account_id": "uon_staking_test_09.xuguangxia.testnet"}`
+  //   ),
+  //   finality: "optimistic",
+  // });
+  // var tmp = JSON.parse(Buffer.from(rawResult.result).toString());
+  // console.log(tmp, "unet balance")
   // result = await account.functionCall({
   //   contractId: TOKEN_CONTRACT_ID,
   //   methodName: "ft_transfer",//mft_register
   //   args: {
-  //     receiver_id: "supernova11.testnet",
+  //     receiver_id: "xuguangxia.testnet",
   //     amount: "8559478000000000000000",
   //     msg: "get back unet",
   //   },
@@ -150,17 +235,30 @@ const Test = async () => {
   // console.log("defund from contract to account");
 
   // transfer lp from SC to supernova -----------------
+  // get lp balance
+  // let rawResult = await provider.query({
+  //   request_type: "call_function",
+  //   account_id: REF_CONTRACT_ID,
+  //   method_name: "get_pool_shares",
+  //   args_base64: btoa(
+  //     `{"pool_id": 382, "account_id": "uon_staking_test_09.xuguangxia.testnet"}`
+  //   ),
+  //   finality: "optimistic",
+  // });
+  // var tmp = JSON.parse(Buffer.from(rawResult.result).toString());
+  // console.log(tmp, ">>>> get balance of lp of the address")
+
   // result = await account.functionCall({
   //   contractId: REF_CONTRACT_ID,
   //   methodName: "mft_transfer",//mft_register
   //   args: {
-  //     // receiver_id: "supernova11.testnet",
+  //     // receiver_id: "xuguangxia.testnet",
   //     // amount: "" + 700 * 100000000 + "0000000000",
   //     // msg: "get back unet",
 
   //     token_id: ":382",
-  //     receiver_id: "supernova11.testnet",
-  //     amount: "161000000000000000000000",
+  //     receiver_id: "xuguangxia.testnet",
+  //     amount: "1000000000000000000000",
 
   //     // account_id: STAKING_CONTRACT_ID,
   //     //token_id: ":382",
@@ -188,18 +286,18 @@ const Test = async () => {
   // console.log("register token");
 
   //register contract-------------------------------------
-  result = await account.functionCall({
-    contractId: REF_CONTRACT_ID,
-    methodName: "mft_register",//mft_register
-    args: {
-      account_id: STAKING_CONTRACT_ID,
-      token_id: ":382",
-      // registration_only: false,
-    },
-    gas: MAX_GAS,
-    attachedDeposit: "1040000000000000000000",
-  });
-  console.log("register contract");
+  // result = await account.functionCall({
+  //   contractId: REF_CONTRACT_ID,
+  //   methodName: "mft_register",//mft_register
+  //   args: {
+  //     account_id: STAKING_CONTRACT_ID,
+  //     token_id: ":382",
+  //     // registration_only: false,
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1040000000000000000000",
+  // });
+  // console.log("register contract");
   //-------------------------------------------------
 
   // get lp back to me
@@ -216,8 +314,6 @@ const Test = async () => {
 
   // })
   // console.log('ssuccess')
-
-
 
   // STAKING
   // result = await account.functionCall({
@@ -236,7 +332,6 @@ const Test = async () => {
   //   attachedDeposit: "1",
   // });
   // console.log("Add Farm");
-
 
   // STAKING
   // result = await account.functionCall({
@@ -274,7 +369,7 @@ const Test = async () => {
   //     farm_id: 0,
   //     account_id: account.accountId,
   //   }
-  // ); 
+  // );
   // console.log(result);
 
   // if(result.total == '0' && result.available == '0'){
@@ -284,7 +379,7 @@ const Test = async () => {
   //   {
   //     account_id: account.accountId,
   //   }
-  // ); 
+  // );
   // result = await account.functionCall({
   //   contractId: WRAP_CONTRACT_ID,
   //   methodName: "storage_deposit",
@@ -297,148 +392,6 @@ const Test = async () => {
   // console.log('registered');
   //   console.log(result);
   // }
-
-
-  // result = await account.viewFunction(
-  //   TOKEN_A_CONTRACT_ID,
-  //   "ft_balance_of",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("Token_A_Balance:", result);
-
-  // result = await account.viewFunction(
-  //   TOKEN_B_CONTRACT_ID,
-  //   "ft_balance_of",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("Token_B_Balance:", result);
-
-  // result = await account.viewFunction(
-  //   TOKEN_C_CONTRACT_ID,
-  //   "ft_balance_of",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("Token_C_Balance:", result);
-
-  // STAKING
-  // result = await account.functionCall({
-  //   contractId: TOKEN_A_CONTRACT_ID,
-  //   methodName: "ft_transfer_call",
-  //   args: {
-  //     receiver_id: STAKING_CONTRACT_ID,
-  //     amount: "1000000000000000000000000",
-  //     msg: JSON.stringify({ staking_status: "Stake to Platform" })
-  //   },
-  //   gas: MAX_GAS,
-  //   attachedDeposit: "1",
-  // });
-  // console.log("Staking A token");
-
-  // result = await account.functionCall({
-  //   contractId: TOKEN_B_CONTRACT_ID,
-  //   methodName: "ft_transfer_call",
-  //   args: {
-  //     receiver_id: STAKING_CONTRACT_ID,
-  //     amount: "1000000000000000000000000",
-  //     msg: JSON.stringify({ staking_status: "Stake to Platform" })
-  //   },
-  //   gas: MAX_GAS,
-  //   attachedDeposit: "1",
-  // });
-  // console.log("Staking B token");
-
-  // result = await account.viewFunction(
-  //   TOKEN_A_CONTRACT_ID,
-  //   "ft_balance_of",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("Token_A_Balance:", result);
-
-  // result = await account.viewFunction(
-  //   TOKEN_B_CONTRACT_ID,
-  //   "ft_balance_of",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("Token_B_Balance:", result);
-
-  // result = await account.viewFunction(
-  //   TOKEN_C_CONTRACT_ID,
-  //   "ft_balance_of",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("Token_C_Balance:", result);
-
-  // result = await account.viewFunction(
-  //   STAKING_CONTRACT_ID,
-  //   "get_claim_amount",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("ClaimAmount:", result);
-
-  // CLAIMING
-  // result = await account.functionCall({
-  //   contractId: STAKING_CONTRACT_ID,
-  //   methodName: "claim_reward",
-  //   args: {
-  //   },
-  //   gas: MAX_GAS,
-  //   attachedDeposit: "1",
-  // });
-  // console.log("Claimed");
-
-  // UNSTAKING
-  // result = await account.functionCall({
-  //   contractId: STAKING_CONTRACT_ID,
-  //   methodName: "unstake",
-  //   args: {
-  //     token_type: TOKEN_A_CONTRACT_ID,
-  //     amount: "500000000000000000000000"
-  //   },
-  //   gas: MAX_GAS,
-  //   attachedDeposit: "1",
-  // });
-  // console.log("Unstaked A Token");
-
-  // result = await account.viewFunction(
-  //   TOKEN_A_CONTRACT_ID,
-  //   "ft_balance_of",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("Token_A_Balance:", result);
-
-  // result = await account.viewFunction(
-  //   TOKEN_B_CONTRACT_ID,
-  //   "ft_balance_of",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("Token_B_Balance:", result);
-
-  // result = await account.viewFunction(
-  //   TOKEN_C_CONTRACT_ID,
-  //   "ft_balance_of",
-  //   {
-  //     account_id: account.accountId,
-  //   }
-  // ); 
-  // console.log("Token_C_Balance:", result);
 };
 
 Test();
