@@ -140,22 +140,14 @@ impl Contract {
 
         let now = env::block_timestamp() / 1000000;
 
-        if token_type == 0 {
-            self.update_claim_amounts(farm_id, 0, now);
-            self.update_claim_amounts(farm_id, 2, now);
-        }
-        else if token_type == 1 {
-            self.update_claim_amounts(farm_id, 1, now);
-            self.update_claim_amounts(farm_id, 2, now);
-        } else if token_type == 2 {
-            self.update_claim_amounts(farm_id, 2, now);
-        }
+        self.update_claim_amounts(farm_id, token_type, now);
 
         farm_info = self.farm_infos.get(farm_id.into()).unwrap();
         stake_info = farm_info.stake_infos.get(&account_id).unwrap();
 
         if token_type == 0 {
-            ext_transfer::ext(AccountId::new_unchecked(farm_info.token_id.to_string()))                .with_attached_deposit(1)
+            ext_transfer::ext(AccountId::new_unchecked(farm_info.token_id.to_string()))
+                .with_attached_deposit(1)
                 .with_static_gas(GAS_FOR_FT_TRANSFER.into())
                 .ft_transfer(
                     account_id.clone().try_into().unwrap(), 
@@ -163,7 +155,11 @@ impl Contract {
                     None,
                 );
             let multiplier: u128 = 10;
-            let reward_weight = stake_info.token_weight.checked_div(10_000_000_000_000_000).unwrap().checked_mul(u128::from(amount)).unwrap().checked_div(stake_info.token_amount).unwrap().checked_mul(10_000_000_000_000_000).unwrap();
+            let reward_weight = stake_info.token_weight
+                .checked_div(10_000_000_000_000_000).unwrap()
+                .checked_mul(u128::from(amount)).unwrap()
+                .checked_div(stake_info.token_amount).unwrap()
+                .checked_mul(10_000_000_000_000_000).unwrap();
             stake_info.token_weight = stake_info.token_weight.checked_sub(reward_weight).unwrap();
             farm_info.total_token_weight = farm_info.total_token_weight.checked_sub(reward_weight).unwrap();
             stake_info.token_amount = stake_info.token_amount.checked_sub(u128::from(amount))

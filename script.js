@@ -64,94 +64,125 @@ const Test = async () => {
 
   let result;
 
-  result = await stakenet_account.functionCall({
-    contractId: STAKING_CONTRACT_ID,
-    methodName: "save_swap_farm",
-    args: {
-      token_id: "token_test01.supernova11.testnet",
-      swap_rate: "10000000",
-      decimal: 24,
-      min_lock_time: 86400000,
-      max_lock_time: 2 * 86400000,
-    },
-    gas: MAX_GAS,
-    attachedDeposit: "1",
-  });
-  console.log("Add Swap Farm");
+  result = await stakenet_account.viewFunction(
+    STAKING_CONTRACT_ID,
+    "get_token_claim_amount",
+    {
+      farm_id: 0,
+      account_id: stakenet_account.accountId,
+    }
+  );
+  console.log(result);
 
-  result = await stakenet_account.functionCall({
-    contractId: STAKING_CONTRACT_ID,
-    methodName: "save_swap_farm",
-    args: {
-      token_id: "token_test02.supernova11.testnet",
-      swap_rate: "30000000",
-      decimal: 20,
-      min_lock_time: 86400000,
-      max_lock_time: 2 * 86400000,
-    },
-    gas: MAX_GAS,
-    attachedDeposit: "1",
-  });
-  console.log("Add Swap Farm");
+  result = await stakenet_account.viewFunction(
+    STAKING_CONTRACT_ID,
+    "get_stake_infos_by_ownerid",
+    {
+      farm_id: 0,
+      account_id: stakenet_account.accountId,
+    }
+  );
+  console.log(result);
+
+  // result = await stakenet_account.functionCall({
+  //   contractId: STAKING_CONTRACT_ID,
+  //   methodName: "save_swap_farm",
+  //   args: {
+  //     token_id: "token_test01.supernova11.testnet",
+  //     swap_rate: "10000000",
+  //     decimal: 24,
+  //     min_lock_time: 86400000,
+  //     max_lock_time: 2 * 86400000,
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1",
+  // });
+  // console.log("Add Swap Farm");
+
+  // result = await stakenet_account.functionCall({
+  //   contractId: STAKING_CONTRACT_ID,
+  //   methodName: "save_swap_farm",
+  //   args: {
+  //     token_id: "token_test02.supernova11.testnet",
+  //     swap_rate: "30000000",
+  //     decimal: 20,
+  //     min_lock_time: 86400000,
+  //     max_lock_time: 2 * 86400000,
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1",
+  // });
+  // console.log("Add Swap Farm");
 
 
-  result = await stakenet_account.functionCall({
-    contractId: STAKING_CONTRACT_ID,
-    methodName: "add_admin",
-    args: {
-      account_id: "pocktest.testnet",
-    },
-    gas: MAX_GAS,
-    attachedDeposit: "0",
-  });
-  console.log("Add Admin");
+  // result = await stakenet_account.functionCall({
+  //   contractId: STAKING_CONTRACT_ID,
+  //   methodName: "add_admin",
+  //   args: {
+  //     account_id: "stakenet.testnet",
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "0",
+  // });
+  // console.log("Add Admin");
 
   // result = await stakenet_account.functionCall({
   //   contractId: STAKING_CONTRACT_ID,
   //   methodName: "remove_admin",
   //   args: {
-  //     account_id: "dekatjauh.testnet",
+  //     account_id: "stakenet.testnet",
   //   },
   //   gas: MAX_GAS,
   //   attachedDeposit: "0",
   // });
   // console.log("Remove Admin");
 
-  result = await contract_account.functionCall({
-    contractId: REF_CONTRACT_ID,
-    methodName: "storage_deposit",
-    args: {
-      account_id: STAKING_CONTRACT_ID,
-      registration_only: false,
-    },
-    gas: MAX_GAS,
-    attachedDeposit: "1020000000000000000000",
-  });
-  console.log("register token");
+  // result = await stakenet_account.functionCall({
+  //   contractId: STAKING_CONTRACT_ID,
+  //   methodName: "remove_admin",
+  //   args: {
+  //     account_id: "pocktest.testnet",
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "0",
+  // });
+  // console.log("Remove Admin");
 
-  result = await contract_account.functionCall({
-    contractId: REF_CONTRACT_ID,
-    methodName: "mft_register",
-    args: {
-      account_id: STAKING_CONTRACT_ID,
-      token_id: ":382",
-    },
-    gas: MAX_GAS,
-    attachedDeposit: "1040000000000000000000",
-  });
-  console.log("register contract");
+  // result = await contract_account.functionCall({
+  //   contractId: REF_CONTRACT_ID,
+  //   methodName: "storage_deposit",
+  //   args: {
+  //     account_id: STAKING_CONTRACT_ID,
+  //     registration_only: false,
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1020000000000000000000",
+  // });
+  // console.log("register token");
 
-  result = await contract_account.functionCall({
-    contractId: REF_CONTRACT_ID,
-    methodName: "mft_register",
-    args: {
-      account_id: STAKING_CONTRACT_ID,
-      token_id: ":642",
-    },
-    gas: MAX_GAS,
-    attachedDeposit: "1040000000000000000000",
-  });
-  console.log("register contract");
+  // result = await contract_account.functionCall({
+  //   contractId: REF_CONTRACT_ID,
+  //   methodName: "mft_register",
+  //   args: {
+  //     account_id: STAKING_CONTRACT_ID,
+  //     token_id: ":382",
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1040000000000000000000",
+  // });
+  // console.log("register contract");
+
+  // result = await contract_account.functionCall({
+  //   contractId: REF_CONTRACT_ID,
+  //   methodName: "mft_register",
+  //   args: {
+  //     account_id: STAKING_CONTRACT_ID,
+  //     token_id: ":642",
+  //   },
+  //   gas: MAX_GAS,
+  //   attachedDeposit: "1040000000000000000000",
+  // });
+  // console.log("register contract");
 
   // const admin_list = ["halyconstudio.testnet", "decentricity.testnet", "francishor.testnet", "cj.testnet", "pocktest.testnet", "nearfar.testnet", "marvin786.testnet"];
   // for (let i = 0; i < admin_list.length; i++) {
