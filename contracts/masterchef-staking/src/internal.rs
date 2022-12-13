@@ -110,7 +110,7 @@ impl Contract {
         }
         let mut claim_amount = 0;
         if  token_type == 0 {
-            if (now / 1000) <= (stake_info.claimed_token_at / 1000) || stake_info.token_amount != 0 {
+            if (now / 1000) <= (stake_info.claimed_token_at / 1000) || stake_info.token_amount == 0 {
                 claim_amount = stake_info.reward_token_to_claim;
             } else {
                 claim_amount = stake_info.reward_token_to_claim.checked_add(
@@ -131,7 +131,7 @@ impl Contract {
         }
 
         if  token_type == 1 {
-            if (now / 1000) <= (stake_info.claimed_lp_at / 1000) || stake_info.lp_share_amount != 0{
+            if (now / 1000) <= (stake_info.claimed_lp_at / 1000) || stake_info.lp_share_amount == 0{
                 claim_amount = stake_info.reward_lp_to_claim;
             } else {
                 claim_amount = stake_info.reward_lp_to_claim.checked_add(
