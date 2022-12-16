@@ -115,15 +115,15 @@ impl Contract {
             } else {
                 claim_amount = stake_info.reward_token_to_claim.checked_add(
                     stake_info.token_weight
-                        .checked_div(10000000000)
-                        .unwrap()
-                        .checked_mul(farm_info.token_reward_rate)
+                        .checked_mul(100000000)
                         .unwrap()
                         .checked_div(farm_info.total_token_weight)
                         .unwrap()
+                        .checked_mul(farm_info.token_reward_rate)
+                        .unwrap()
                         .checked_mul(((now / 1000) - (stake_info.claimed_token_at / 1000)).try_into().unwrap())
                         .unwrap()
-                        .checked_mul(10000000000)
+                        .checked_div(100000000)
                         .unwrap(),
                 )
                 .unwrap();
@@ -136,15 +136,15 @@ impl Contract {
             } else {
                 claim_amount = stake_info.reward_lp_to_claim.checked_add(
                     stake_info.lp_share_weight
-                        .checked_div(1000000000000)
-                        .unwrap()
-                        .checked_mul(farm_info.pool_reward_rate)
+                        .checked_mul(100000000)
                         .unwrap()
                         .checked_div(farm_info.total_lp_share_weight)
                         .unwrap()
+                        .checked_mul(farm_info.pool_reward_rate)
+                        .unwrap()
                         .checked_mul(((now / 1000) - (stake_info.claimed_lp_at / 1000)).try_into().unwrap())
                         .unwrap()
-                        .checked_mul(1000000000000)
+                        .checked_div(100000000)
                         .unwrap(),
                 )
                 .unwrap();
@@ -166,15 +166,15 @@ impl Contract {
 
                     let mut reward_amount: u128 = 0;
                     reward_amount = u128::from(stake_info.reward_locked.get(index).unwrap())
-                    .checked_div(10000000000)
-                    .unwrap()
-                    .checked_mul(farm_info.reward_reward_rate)
+                    .checked_mul(100000000)
                     .unwrap()
                     .checked_div(farm_info.total_reward_amount)
                     .unwrap()
+                    .checked_mul(farm_info.reward_reward_rate)
+                    .unwrap()
                     .checked_mul(((last_time / 1000) - (stake_info.claimed_reward_at / 1000)).try_into().unwrap())
                     .unwrap()
-                    .checked_mul(10000000000)
+                    .checked_div(100000000)
                     .unwrap();
                     claim_amount = claim_amount.checked_add(reward_amount).unwrap();
                 }
@@ -209,15 +209,15 @@ impl Contract {
                 if (now_time / 1000) > (stake_info.claimed_token_at / 1000) {
                     stake_info.reward_token_to_claim = stake_info.reward_token_to_claim.checked_add(
                         stake_info.token_weight
-                            .checked_div(10000000000)
-                            .unwrap()
-                            .checked_mul(farm_info.token_reward_rate)
+                            .checked_mul(100000000)
                             .unwrap()
                             .checked_div(farm_info.total_token_weight)
                             .unwrap()
+                            .checked_mul(farm_info.token_reward_rate)
+                            .unwrap()
                             .checked_mul(((now_time / 1000) - (stake_info.claimed_token_at / 1000)).try_into().unwrap())
                             .unwrap()
-                            .checked_mul(10000000000)
+                            .checked_div(100000000)
                             .unwrap(),
                     ).unwrap();
                     stake_info.claimed_token_at = now_time;
@@ -227,15 +227,15 @@ impl Contract {
                 if (now_time / 1000) > (stake_info.claimed_lp_at / 1000) {
                     stake_info.reward_lp_to_claim = stake_info.reward_lp_to_claim.checked_add(
                         stake_info.lp_share_weight
-                            .checked_div(1000000000000)
-                            .unwrap()
-                            .checked_mul(farm_info.pool_reward_rate)
+                            .checked_mul(100000000)
                             .unwrap()
                             .checked_div(farm_info.total_lp_share_weight)
                             .unwrap()
+                            .checked_mul(farm_info.pool_reward_rate)
+                            .unwrap()
                             .checked_mul(((now_time / 1000) - (stake_info.claimed_lp_at / 1000)).try_into().unwrap())
                             .unwrap()
-                            .checked_mul(1000000000000)
+                            .checked_div(100000000)
                             .unwrap(),
                     ).unwrap();
                     stake_info.claimed_lp_at = now_time;
@@ -257,15 +257,15 @@ impl Contract {
 
                         let mut reward_amount: u128 = 0;
                         reward_amount = u128::from(stake_info.reward_locked.get(index).unwrap())
-                        .checked_div(10000000000)
-                        .unwrap()
-                        .checked_mul(farm_info.reward_reward_rate)
+                        .checked_mul(100000000)
                         .unwrap()
                         .checked_div(total_reward_amount)
                         .unwrap()
+                        .checked_mul(farm_info.reward_reward_rate)
+                        .unwrap()
                         .checked_mul(((last_time / 1000) - (stake_info.claimed_reward_at / 1000)).try_into().unwrap())
                         .unwrap()
-                        .checked_mul(10000000000)
+                        .checked_div(100000000)
                         .unwrap();
                         sum_reward_amount = sum_reward_amount.checked_add(reward_amount).unwrap();
                         stake_info.reward_locked.replace(index, &U128::from(u128::from(stake_info.reward_locked.get(index).unwrap()).checked_add(reward_amount).unwrap()));

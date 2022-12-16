@@ -155,18 +155,22 @@ impl Contract {
                     None,
                 );
             let multiplier: u128 = 10;
-            let reward_weight = stake_info.token_weight
-                .checked_div(10_000_000_000_000_000).unwrap()
-                .checked_mul(u128::from(amount)).unwrap()
+            let reward_weight = u128::from(amount)
+                .checked_mul(100_000_000).unwrap()
                 .checked_div(stake_info.token_amount).unwrap()
-                .checked_mul(10_000_000_000_000_000).unwrap();
+                .checked_mul(stake_info.token_weight).unwrap()
+                .checked_div(100_000_000).unwrap();
             stake_info.token_weight = stake_info.token_weight.checked_sub(reward_weight).unwrap();
             farm_info.total_token_weight = farm_info.total_token_weight.checked_sub(reward_weight).unwrap();
             stake_info.token_amount = stake_info.token_amount.checked_sub(u128::from(amount))
                     .unwrap();
             farm_info.total_token_amount = farm_info.total_token_amount.checked_sub(u128::from(amount)).unwrap();
         } else if token_type == 1 {
-            let reward_weight = stake_info.lp_share_weight.checked_div(10_000_000_000_000_000).unwrap().checked_mul(u128::from(amount)).unwrap().checked_div(stake_info.lp_share_amount).unwrap().checked_mul(10_000_000_000_000_000).unwrap();
+            let reward_weight = u128::from(amount).
+            checked_mul(100_000_000).unwrap().
+            checked_div(stake_info.lp_share_amount).unwrap().
+            checked_mul(stake_info.lp_share_weight).unwrap().
+            checked_div(100_000_000).unwrap();
             stake_info.lp_share_weight = stake_info.lp_share_weight.checked_sub(reward_weight).unwrap();
             farm_info.total_lp_share_weight = farm_info.total_lp_share_weight.checked_sub(reward_weight).unwrap();
             stake_info.lp_share_amount = stake_info.lp_share_amount.checked_sub(u128::from(amount)).unwrap();

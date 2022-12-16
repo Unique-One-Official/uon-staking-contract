@@ -66,10 +66,10 @@ const Test = async () => {
 
   result = await stakenet_account.viewFunction(
     STAKING_CONTRACT_ID,
-    "get_token_claim_amount",
+    "get_lp_claim_amount",
     {
-      farm_id: 0,
-      account_id: stakenet_account.accountId,
+      farm_id: 3,
+      account_id: "nearfar.testnet",
     }
   );
   console.log(result);
@@ -78,8 +78,8 @@ const Test = async () => {
     STAKING_CONTRACT_ID,
     "get_stake_infos_by_ownerid",
     {
-      farm_id: 0,
-      account_id: stakenet_account.accountId,
+      farm_id: 3,
+      account_id: "nearfar.testnet",
     }
   );
   console.log(result);

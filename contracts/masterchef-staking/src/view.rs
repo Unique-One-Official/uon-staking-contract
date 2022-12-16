@@ -20,6 +20,8 @@ pub struct FarmSkeletonInfo {
     pub max_reward_vesting_duration: u64,
     pub starting_at: u64,
     pub ending_at: u64,
+    pub total_token_weight: U128,
+    pub total_lp_share_weight: U128,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -41,6 +43,8 @@ pub struct StakeSkeletonInfo {
     pub reward_locked: Vec<U128>,
     pub unlocked_at: Vec<u64>,
     pub staking_duration: Vec<u64>,
+    pub token_weight: U128,
+    pub lp_share_weight: U128,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -151,6 +155,8 @@ impl Contract {
             max_reward_vesting_duration: farm_info.max_reward_vesting_duration,
             starting_at: farm_info.starting_at,
             ending_at: farm_info.ending_at,
+            total_token_weight: U128(farm_info.total_token_weight),
+            total_lp_share_weight: U128(farm_info.total_lp_share_weight),
         }
     }
 
@@ -183,6 +189,8 @@ impl Contract {
                 reward_locked: info.reward_locked.to_vec(),
                 unlocked_at: info.unlocked_at.to_vec(),
                 staking_duration: info.staking_duration.to_vec(),
+                token_weight: U128(info.token_weight),
+                lp_share_weight: U128(info.lp_share_weight),
             };
             tmp.push(stake_info);
             tmp
